@@ -12,7 +12,7 @@
 //   BREVO_API_KEY    chave de API da Brevo (envio do e-mail com a senha), ou
 //   RESEND_API_KEY   chave da Resend (usada só se não houver a da Brevo; exige domínio próprio)
 //   EMAIL_REMETENTE  ex.: Natalê <seuemail@gmail.com> (verificado em Brevo → Senders)
-//   SITE_URL         ex.: https://dimitrifergus.github.io/kit-doce-natal
+//   SITE_URL         endereço da área de membros, ex.: https://dimitrifergus.github.io/area-de-membros-natale
 // O Supabase injeta sozinho SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY (a chave
 // secreta fica só no servidor e nunca chega ao navegador).
 // =====================================================================
@@ -22,7 +22,7 @@ import { emailBoasVindas, enviarEmail } from "./email.ts";
 
 const SEGREDO = Deno.env.get("WEBHOOK_SEGREDO") ?? "";
 const SITE_URL = (Deno.env.get("SITE_URL") ?? "").replace(/\/+$/, "");
-const LINK_MEMBROS = SITE_URL + "/membros/";
+const LINK_MEMBROS = SITE_URL + "/"; // a área de membros fica na raiz do site dela
 const CHAVES_EMAIL = { brevo: Deno.env.get("BREVO_API_KEY") ?? "", resend: Deno.env.get("RESEND_API_KEY") ?? "" };
 const EMAIL_REMETENTE = Deno.env.get("EMAIL_REMETENTE") ?? "";
 const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, {
