@@ -1,7 +1,7 @@
 // E-mail de boas-vindas com a senha de acesso.
-// Envia pela Brevo (BREVO_API_KEY; remetente verificado em Senders, pode ser um Gmail)
-// ou, se não houver chave da Brevo, pela Resend (RESEND_API_KEY; exige domínio próprio).
-// EMAIL_REMETENTE: ex.: "Natalê <seuemail@gmail.com>".
+// Ordem: Gmail (GMAIL_REMETENTE + GMAIL_SENHA_APP, senha de app do Google),
+// depois Brevo (BREVO_API_KEY), depois Resend (RESEND_API_KEY; exige domínio próprio).
+// EMAIL_REMETENTE: ex.: "Natalê <seuemail@gmail.com>" (no Gmail, só o nome é usado).
 
 const esc = (s: string) =>
   s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
@@ -32,9 +32,18 @@ export function separarRemetente(r: string): { nome: string; email: string } {
 
 type Mensagem = { assunto: string; html: string; texto: string };
 
-/** Envia pela Brevo (se houver BREVO_API_KEY) ou pela Resend. Lança erro se não conseguir
- *  (o webhook então desfaz a conta e a plataforma tenta de novo). */
-export async function enviarEmail(c: { brevo?: string; resend?: string }, remetente: string, para: string, m: Mensagem) {
+export type ChavesEmail = { gmail?: string; gmailSenha?: string; brevo?: string; resend?: string };
+
+/** Envia pelo Gmail (se houver GMAIL_REMETENTE + GMAIL_SENHA_APP), senão Brevo, senão Resend.
+ *  Lança erro se não conseguir (o webhook então desfaz a conta e a plataforma tenta de novo). */
+export async function enviarEmail(c: ChavesEmail, remetente: string, para: string, m: Mensagem) {
+  if (c.gmail && c.gmailSenha) {
+    // SMTP do próprio Google (porta 465, SSL). O "de" precisa ser o próprio Gmail.
+    const { default: nodemailer } = await import("npm:nodemailer@6.9.16");
+    const t = nodemailer.createTransport({ host: "smtp.gmail.com", port: 465, secure: true, auth: { user: c.gmail, pass: c.gmailSenha.replace(/\s+/g, "") } });
+    await t.sendMail({ from: { name: separarRemetente(remetente).nome, address: c.gmail }, to: para, subject: m.assunto, html: m.html, text: m.texto });
+    return;
+  }
   if (c.brevo) {
     const r = await fetch("https://api.brevo.com/v3/smtp/email", {
       method: "POST",

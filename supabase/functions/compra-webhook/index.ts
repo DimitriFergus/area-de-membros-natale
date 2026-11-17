@@ -9,9 +9,10 @@
 //
 // Segredos (NUNCA no código, só em "supabase secrets set"):
 //   WEBHOOK_SEGREDO  chave secreta do webhook da Cakto, token da Kiwify ou hottok da Hotmart (mín. 16 caracteres)
-//   BREVO_API_KEY    chave de API da Brevo (envio do e-mail com a senha), ou
-//   RESEND_API_KEY   chave da Resend (usada só se não houver a da Brevo; exige domínio próprio)
-//   EMAIL_REMETENTE  ex.: Natalê <seuemail@gmail.com> (verificado em Brevo → Senders)
+//   GMAIL_REMETENTE  seu Gmail, e GMAIL_SENHA_APP  senha de app do Google (envio do e-mail com a senha), ou
+//   BREVO_API_KEY    chave de API da Brevo, ou
+//   RESEND_API_KEY   chave da Resend (exige domínio próprio)
+//   EMAIL_REMETENTE  ex.: Natalê <seuemail@gmail.com>
 //   SITE_URL         endereço da área de membros, ex.: https://dimitrifergus.github.io/area-de-membros-natale
 // O Supabase injeta sozinho SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY (a chave
 // secreta fica só no servidor e nunca chega ao navegador).
@@ -23,7 +24,11 @@ import { emailBoasVindas, enviarEmail } from "./email.ts";
 const SEGREDO = Deno.env.get("WEBHOOK_SEGREDO") ?? "";
 const SITE_URL = (Deno.env.get("SITE_URL") ?? "").replace(/\/+$/, "");
 const LINK_MEMBROS = SITE_URL + "/"; // a área de membros fica na raiz do site dela
-const CHAVES_EMAIL = { brevo: Deno.env.get("BREVO_API_KEY") ?? "", resend: Deno.env.get("RESEND_API_KEY") ?? "" };
+const CHAVES_EMAIL = {
+  gmail: Deno.env.get("GMAIL_REMETENTE") ?? "", gmailSenha: Deno.env.get("GMAIL_SENHA_APP") ?? "",
+  brevo: Deno.env.get("BREVO_API_KEY") ?? "", resend: Deno.env.get("RESEND_API_KEY") ?? "",
+};
+const TEM_EMAIL = !!((CHAVES_EMAIL.gmail && CHAVES_EMAIL.gmailSenha) || CHAVES_EMAIL.brevo || CHAVES_EMAIL.resend);
 const EMAIL_REMETENTE = Deno.env.get("EMAIL_REMETENTE") ?? "";
 const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, {
   auth: { persistSession: false, autoRefreshToken: false },
@@ -35,7 +40,7 @@ const resposta = (status: number, msg: string) =>
 Deno.serve(async (req) => {
   if (req.method !== "POST") return resposta(405, "use POST");
   if (SEGREDO.length < 16) return resposta(500, "WEBHOOK_SEGREDO não configurado");
-  if (!SITE_URL || !(CHAVES_EMAIL.brevo || CHAVES_EMAIL.resend) || !EMAIL_REMETENTE) return resposta(500, "SITE_URL, BREVO_API_KEY/RESEND_API_KEY ou EMAIL_REMETENTE não configurado");
+  if (!SITE_URL || !TEM_EMAIL || !EMAIL_REMETENTE) return resposta(500, "SITE_URL, chave de e-mail (Gmail/Brevo/Resend) ou EMAIL_REMETENTE não configurado");
 
   const tamanho = Number(req.headers.get("content-length") ?? "0");
   if (tamanho > 200_000) return resposta(413, "corpo grande demais");
