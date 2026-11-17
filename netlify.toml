@@ -1,0 +1,29 @@
+# Área de membros Natalê: site estático, sem build.
+[build]
+  publish = "."
+  command = ""
+
+# a pasta do banco e o guia não precisam ser servidos
+[[redirects]]
+  from = "/supabase/*"
+  to = "/404"
+  status = 404
+  force = true
+[[redirects]]
+  from = "/BANCO-DE-DADOS.md"
+  to = "/404"
+  status = 404
+  force = true
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+# o service worker precisa ser sempre o mais novo (senão o celular não atualiza o app)
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache"
