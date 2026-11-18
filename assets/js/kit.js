@@ -21,7 +21,7 @@ window.KIT = {
   videoEmbed: "",
 
   // Contatos
-  emailSuporte: "suporte@seudominio.com.br",
+  emailSuporte: "kitnataleacesso@gmail.com",
   whatsappSuporte: "",        // só números com DDI, ex.: 5511999999999
   linkGrupoComunidade: "",    // link de convite do grupo/comunidade de alunos
 
