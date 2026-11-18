@@ -20,6 +20,11 @@
 import { createClient } from "npm:@supabase/supabase-js@2.45.4";
 import { autenticado, gerarSenha, interpretar } from "./regras.ts";
 import { emailBoasVindas, enviarEmail } from "./email.ts";
+import { enviarCompraMeta, eventoCompraCakto } from "./meta.ts";
+
+const META_PIXEL_ID = Deno.env.get("META_PIXEL_ID") ?? "";
+const META_CAPI_TOKEN = Deno.env.get("META_CAPI_TOKEN") ?? "";
+const SITE_VENDAS = Deno.env.get("SITE_VENDAS") ?? "https://kitnatalle.netlify.app/";
 
 const SEGREDO = Deno.env.get("WEBHOOK_SEGREDO") ?? "";
 const SITE_URL = (Deno.env.get("SITE_URL") ?? "").replace(/\/+$/, "");
@@ -78,6 +83,11 @@ Deno.serve(async (req) => {
         if (criado?.user?.id) await admin.auth.admin.deleteUser(criado.user.id);
         return resposta(500, "compra registrada, e-mail falhou");
       }
+    }
+    // Conversão "Purchase" para os anúncios da Meta (repetições do mesmo pedido são descartadas pela Meta pelo event_id)
+    if (ev.plataforma === "cakto" && META_PIXEL_ID && META_CAPI_TOKEN) {
+      const r = await enviarCompraMeta(META_PIXEL_ID, META_CAPI_TOKEN, await eventoCompraCakto(dados, SITE_VENDAS), url.searchParams.get("meta_teste") ?? undefined);
+      console.log("meta purchase", r);
     }
   }
   console.log("compra", ev.plataforma, ev.status); // sem e-mail no log
