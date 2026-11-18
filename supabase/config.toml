@@ -3,8 +3,8 @@
 project_id = "natale"
 
 [auth]
-site_url = "https://dimitrifergus.github.io/area-de-membros-natale/"
-additional_redirect_urls = ["https://dimitrifergus.github.io/area-de-membros-natale/", "https://areademembrosnatale.netlify.app/", "http://localhost:5500/"]
+site_url = "https://areademembroskitnatale.netlify.app/"
+additional_redirect_urls = ["https://areademembroskitnatale.netlify.app/", "https://areademembroskitnatale.netlify.app/**", "https://dimitrifergus.github.io/area-de-membros-natale/", "http://localhost:5500/"]
 # ninguém cria conta sozinho: só quem comprou (o webhook convida)
 enable_signup = false
 minimum_password_length = 8

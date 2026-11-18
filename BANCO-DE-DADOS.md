@@ -48,7 +48,7 @@ Se a chave secreta vazar um dia: Supabase → **Project Settings → API Keys** 
    - Em **Minimum password length**, coloque 8.
    - Em **Password requirements**, escolha letras e números.
 2. **URL Configuration**:
-   - **Site URL:** `https://dimitrifergus.github.io/kit-doce-natal/membros/`
+   - **Site URL:** `https://areademembroskitnatale.netlify.app/`
    - **Redirect URLs:** adicione a mesma e também `http://localhost:5500/membros/`
 3. **Resend (manda o e-mail com a senha): obrigatório antes de vender.**
    - Crie uma conta grátis em https://resend.com (3.000 e-mails por mês).
@@ -66,7 +66,7 @@ No terminal, dentro da pasta do projeto:
 ```
 npx supabase login
 npx supabase link --project-ref SEU_PROJECT_REF
-npx supabase secrets set WEBHOOK_SEGREDO="CHAVE_SECRETA_DA_CAKTO_OU_TOKEN_KIWIFY_OU_HOTTOK" SITE_URL="https://dimitrifergus.github.io/kit-doce-natal"
+npx supabase secrets set WEBHOOK_SEGREDO="CHAVE_SECRETA_DA_CAKTO_OU_TOKEN_KIWIFY_OU_HOTTOK" SITE_URL="https://areademembroskitnatale.netlify.app"
 npx supabase secrets set RESEND_API_KEY="re_..." EMAIL_REMETENTE="Natalê <acesso@SEUDOMINIO.com.br>"
 npx supabase functions deploy compra-webhook --no-verify-jwt
 ```

@@ -13,7 +13,7 @@
 //   BREVO_API_KEY    chave de API da Brevo, ou
 //   RESEND_API_KEY   chave da Resend (exige domínio próprio)
 //   EMAIL_REMETENTE  ex.: Natalê <seuemail@gmail.com>
-//   SITE_URL         endereço da área de membros, ex.: https://dimitrifergus.github.io/area-de-membros-natale
+//   SITE_URL         endereço da área de membros, ex.: https://areademembroskitnatale.netlify.app
 // O Supabase injeta sozinho SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY (a chave
 // secreta fica só no servidor e nunca chega ao navegador).
 // =====================================================================
