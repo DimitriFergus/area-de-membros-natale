@@ -225,10 +225,13 @@
   ];
   var BOTTOM = ["inicio", "receitas", "calculadora", "encomendas"];
   function montarNav() {
-    $("#side-nav").innerHTML = NAV.map(function (n) { return '<a href="#/' + n[0] + '" data-r="' + n[0] + '"><span>' + n[1] + "</span>" + n[2] + "</a>"; }).join("");
+    $("#side-nav").innerHTML =
+      '<button type="button" class="side-install" id="side-install" data-como-instalar hidden><span class="si-ic" aria-hidden="true">📲</span><span class="si-txt"><strong>Instalar o app</strong><small>Natalê na tela inicial do celular</small></span><span class="si-seta" aria-hidden="true">›</span></button>' +
+      NAV.map(function (n) { return '<a href="#/' + n[0] + '" data-r="' + n[0] + '"><span>' + n[1] + "</span>" + n[2] + "</a>"; }).join("");
     $("#bottomnav").innerHTML = NAV.filter(function (n) { return BOTTOM.indexOf(n[0]) > -1; }).map(function (n) { return '<a href="#/' + n[0] + '" data-r="' + n[0] + '"><span>' + n[1] + "</span>" + n[2] + "</a>"; }).join("") +
-      '<button type="button" id="menu-btn"><span>☰</span>Menu</button>';
-    $("#menu-btn").addEventListener("click", function () { document.body.classList.toggle("menu-open"); });
+      '<button type="button" id="menu-btn"><span>☰<i class="menu-dot" id="menu-dot" hidden></i></span>Menu</button>';
+    atualizaInstalarMenu();
+    $("#menu-btn").addEventListener("click", function () { document.body.classList.toggle("menu-open"); if (!store.get("menuVisto", false)) { store.set("menuVisto", true); atualizaInstalarMenu(); } });
     $("#side-backdrop").addEventListener("click", function () { document.body.classList.remove("menu-open"); });
   }
   var BONUS_ROTAS = ["treinamento", "sabores", "checklist", "calendario", "artes"];
@@ -998,13 +1001,85 @@
   function standalone() { return matchMedia("(display-mode: standalone)").matches || navigator.standalone === true; }
   function ehIOS() { return /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1); }
   addEventListener("beforeinstallprompt", function (e) { e.preventDefault(); pedidoInstalar = e; mostraInstalar(); });
-  addEventListener("appinstalled", function () { pedidoInstalar = null; store.set("instalado", true); var b = $("#instalar"); if (b) b.remove(); toast("App instalado! Procure o ícone Natalê na tela inicial 🎄"); });
+  addEventListener("appinstalled", function () { pedidoInstalar = null; store.set("instalado", true); var b = $("#instalar"); if (b) b.remove(); atualizaInstalarMenu(); toast("App instalado! Procure o ícone Natalê na tela inicial 🎄"); });
+  function jaInstalado() { return standalone(); } // aberto pelo ícone do app; no navegador o botão continua (se ela desinstalou, consegue instalar de novo)
+  /* botão "Instalar o app" no topo do menu (☰) e bolinha dourada no botão Menu enquanto não estiver instalado */
+  function atualizaInstalarMenu() {
+    var mostra = !jaInstalado();
+    var b = $("#side-install"), d = $("#menu-dot");
+    if (b) b.hidden = !mostra;
+    if (d) d.hidden = !mostra || store.get("menuVisto", false);
+  }
+  /* navegador "de dentro" de outro app (Instagram, Facebook, Gmail, TikTok...): não instala, precisa abrir no navegador */
+  function navegadorDeApp() { return /Instagram|FBAN|FBAV|FB_IAB|FBIOS|Line\/|TikTok|musical_ly|Snapchat|GSA\/|; wv\)/i.test(navigator.userAgent); }
+  function passosInstalar() {
+    var ua = navigator.userAgent;
+    if (navegadorDeApp()) return {
+      titulo: "Abra no navegador primeiro",
+      passos: ["Toque nos <b>três pontinhos</b> (⋯ ou ⋮) no canto da tela.", "Escolha <b>Abrir no navegador</b> (ou <b>Abrir no Chrome</b> / <b>Abrir no Safari</b>).", "Entre com seu e-mail e senha, abra o <b>Menu ☰</b> e toque em <b>Instalar o app</b> de novo."],
+      copiar: true
+    };
+    if (ehIOS()) {
+      var safari = !/CriOS|FxiOS|EdgiOS|OPiOS/i.test(ua);
+      return {
+        titulo: safari ? "No iPhone (Safari)" : "No iPhone",
+        passos: [
+          "Toque no botão <b>Compartilhar</b> <span class=\"ic-share\" aria-hidden=\"true\">⬆︎</span> (" + (safari ? "na barra de baixo do Safari" : "na barra de endereço, em cima") + ").",
+          "Role a lista e toque em <b>Adicionar à Tela de Início</b>.",
+          "Toque em <b>Adicionar</b>. Pronto: o ícone <b>Natalê</b> aparece junto dos seus apps."
+        ],
+        extra: safari ? "" : "Se não aparecer essa opção, abra este endereço no <b>Safari</b> e repita os passos.",
+        copiar: !safari
+      };
+    }
+    if (/Android/i.test(ua)) {
+      var samsung = /SamsungBrowser/i.test(ua);
+      return {
+        titulo: samsung ? "No Android (Samsung Internet)" : "No Android",
+        passos: samsung
+          ? ["Toque no <b>Menu ☰</b> do navegador (embaixo, à direita).", "Toque em <b>Adicionar página a</b> e depois em <b>Tela inicial</b>.", "Confirme em <b>Adicionar</b>."]
+          : ["Toque nos <b>três pontinhos ⋮</b> no canto de cima do Chrome.", "Toque em <b>Instalar app</b> (ou <b>Adicionar à tela inicial</b>).", "Confirme em <b>Instalar</b>. O ícone <b>Natalê</b> aparece na tela inicial."]
+      };
+    }
+    return {
+      titulo: "No computador",
+      passos: ["No Chrome ou Edge, clique no ícone de <b>instalar</b> ⊕ no fim da barra de endereço.", "Ou abra o menu <b>⋮</b> e escolha <b>Instalar Natalê</b>.", "Para usar no celular, abra este mesmo endereço no celular e toque em <b>Menu ☰ → Instalar o app</b>."]
+    };
+  }
+  function abrirComoInstalar() {
+    document.body.classList.remove("menu-open");
+    if (jaInstalado()) { toast("O app já está instalado neste aparelho 🎄"); return; }
+    var p = passosInstalar();
+    var bg = document.createElement("div"); bg.className = "fsheet-bg";
+    bg.innerHTML = '<div class="fsheet" role="dialog" aria-modal="true" aria-label="Instalar o app"><div class="fsheet-head"><span class="inst-big" aria-hidden="true">📲</span><div><span class="tag">Instalar o app</span><h2>' + p.titulo + '</h2></div><button type="button" class="x" data-fechar aria-label="Fechar">×</button></div>' +
+      '<div class="fsheet-body">' +
+      (pedidoInstalar ? '<button type="button" class="btn btn-block btn-lg" data-instalar-ja>📲 INSTALAR AGORA</button><p class="inst-ou">ou, se preferir, faça pelo navegador:</p>' : '<p class="inst-intro">Com o app na tela inicial, o Natalê abre com um toque, mais rápido, e funciona até sem internet.</p>') +
+      '<ol class="inst-passos">' + p.passos.map(function (t) { return "<li>" + t + "</li>"; }).join("") + "</ol>" +
+      (p.extra ? '<p class="fl-dica">💡 ' + p.extra + "</p>" : "") +
+      (p.copiar ? '<button type="button" class="btn btn-ghost btn-block" data-copiar-link>Copiar o endereço da área de membros</button>' : "") +
+      '<button type="button" class="btn btn-ghost btn-block" data-fechar>Fechar</button></div></div>';
+    document.body.appendChild(bg); document.body.style.overflow = "hidden";
+    requestAnimationFrame(function () { bg.classList.add("on"); });
+    function fechar() { removeEventListener("hashchange", fechar); removeEventListener("keydown", tecla); document.body.style.overflow = ""; bg.remove(); }
+    function tecla(e) { if (e.key === "Escape") fechar(); }
+    bg.addEventListener("click", function (e) {
+      if (e.target === bg || e.target.closest("[data-fechar]")) fechar();
+      else if (e.target.closest("[data-instalar-ja]") && pedidoInstalar) {
+        pedidoInstalar.prompt();
+        pedidoInstalar.userChoice.then(function () { pedidoInstalar = null; fechar(); });
+      } else if (e.target.closest("[data-copiar-link]")) {
+        var link = location.origin + location.pathname;
+        (navigator.clipboard ? navigator.clipboard.writeText(link) : Promise.reject()).then(function () { toast("Endereço copiado! Cole no Safari ou no Chrome."); }, function () { prompt("Copie o endereço:", link); });
+      }
+    });
+    addEventListener("hashchange", fechar); addEventListener("keydown", tecla);
+  }
   /* cartão "Instalar o app" no topo do Início */
   function cartaoInstalar() {
     if (standalone() || store.get("instalado", false) || store.get("instalarFechado", 0) > Date.now()) return "";
     if (pedidoInstalar) return '<section class="install" id="instalar"><span class="install-ic">📲</span><div><strong>Instale o app no seu celular</strong><span>Abre direto da tela inicial, mais rápido e funciona até sem internet.</span></div><button type="button" class="btn btn-sm" data-instalar>Instalar</button><button type="button" class="x" data-fechar-inst aria-label="Fechar">×</button></section>';
-    if (ehIOS()) return '<section class="install" id="instalar"><span class="install-ic">📲</span><div><strong>Coloque o app na tela inicial</strong><span>No Safari, toque em <b>Compartilhar</b> <span aria-hidden="true">⎋</span> e depois em <b>Adicionar à Tela de Início</b>.</span></div><button type="button" class="x" data-fechar-inst aria-label="Fechar">×</button></section>';
-    return "";
+    if (ehIOS()) return '<section class="install" id="instalar"><span class="install-ic">📲</span><div><strong>Coloque o app na tela inicial</strong><span>No Safari, toque em <b>Compartilhar</b> <span aria-hidden="true">⎋</span> e depois em <b>Adicionar à Tela de Início</b>.</span></div><button type="button" class="btn btn-sm" data-como-instalar>Ver passo a passo</button><button type="button" class="x" data-fechar-inst aria-label="Fechar">×</button></section>';
+    return '<section class="install" id="instalar"><span class="install-ic">📲</span><div><strong>Instale o app no seu celular</strong><span>Abre direto da tela inicial, mais rápido e funciona até sem internet.</span></div><button type="button" class="btn btn-sm" data-como-instalar>Como instalar</button><button type="button" class="x" data-fechar-inst aria-label="Fechar">×</button></section>';
   }
   function mostraInstalar() {
     if ($("#instalar") || rota().nome !== "inicio" || !logado()) return;
@@ -1015,6 +1090,8 @@
     if (e.target.closest("[data-instalar]") && pedidoInstalar) {
       pedidoInstalar.prompt();
       pedidoInstalar.userChoice.then(function () { pedidoInstalar = null; var b = $("#instalar"); if (b) b.remove(); });
+    } else if (e.target.closest("[data-como-instalar]")) {
+      abrirComoInstalar();
     } else if (e.target.closest("[data-fechar-inst]")) {
       store.set("instalarFechado", Date.now() + 7 * 864e5); var b = $("#instalar"); if (b) b.remove();
     }

@@ -511,3 +511,28 @@ body{overflow-x:clip}
 .lg-painel .lg-link{display:block;margin:10px auto 0}
 .lg-txt{font-size:14.5px;color:var(--ink-soft);text-align:center;margin:4px 0 14px}
 .lg-ok{color:var(--green);font-size:14px;font-weight:600;margin:0 0 10px}
+
+/* ===== botão "Instalar o app" no menu ☰ ===== */
+.side-install{display:flex;align-items:center;gap:10px;width:100%;margin:0 0 10px;padding:12px;border:0;border-radius:14px;cursor:pointer;text-align:left;font:inherit;
+  background:linear-gradient(135deg,var(--gold-300),var(--gold-500));color:var(--wine-900);box-shadow:0 6px 18px rgba(0,0,0,.25),0 0 0 2px rgba(255,255,255,.18) inset;animation:si-pulso 2.4s ease-in-out infinite}
+.side-install[hidden]{display:none}
+.side-install .si-ic{font-size:26px;flex:none}
+.side-install .si-txt{flex:1;min-width:0;line-height:1.2}
+.side-install strong{display:block;font-size:15.5px;font-weight:800;letter-spacing:.01em}
+.side-install small{display:block;font-size:12px;opacity:.8;margin-top:2px}
+.side-install .si-seta{font-size:26px;line-height:1;font-weight:700}
+.side-install:hover,.side-install:focus-visible{filter:brightness(1.06)}
+@keyframes si-pulso{0%,100%{transform:none}50%{transform:scale(1.025)}}
+#menu-btn>span{position:relative}
+.menu-dot{position:absolute;top:-2px;right:-7px;width:10px;height:10px;border-radius:50%;background:var(--gold-400);box-shadow:0 0 0 2px var(--wine-900)}
+.menu-dot[hidden]{display:none}
+.inst-big{flex:none;width:52px;height:52px;border-radius:14px;display:grid;place-items:center;font-size:30px;background:var(--wine-700)}
+.inst-intro,.inst-ou{font-size:14px;color:var(--ink-500,#6b5a55);margin:0 0 12px}
+.inst-ou{text-align:center;margin:12px 0}
+.inst-passos{counter-reset:p;list-style:none;margin:0 0 14px;padding:0;display:grid;gap:10px}
+.inst-passos li{counter-increment:p;position:relative;padding:12px 12px 12px 50px;background:#fff;border-radius:14px;box-shadow:var(--shadow-sm);font-size:14.5px;line-height:1.4}
+.inst-passos li::before{content:counter(p);position:absolute;left:12px;top:50%;transform:translateY(-50%);width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--wine-700);color:var(--gold-300);font-weight:700}
+.inst-passos b{color:var(--wine-700)}
+.ic-share{display:inline-block;padding:0 5px;border:1.5px solid currentColor;border-radius:5px;font-size:12px}
+.fsheet-body .btn+.btn{margin-top:8px}
+@media (prefers-reduced-motion:reduce){.side-install{animation:none}}
