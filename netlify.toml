@@ -27,3 +27,9 @@
   for = "/sw.js"
   [headers.values]
     Cache-Control = "no-cache"
+
+# manifesto do app (instalar no celular) com o tipo certo
+[[headers]]
+  for = "/manifest.webmanifest"
+  [headers.values]
+    Content-Type = "application/manifest+json"
